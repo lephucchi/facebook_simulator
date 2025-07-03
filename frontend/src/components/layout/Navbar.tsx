@@ -19,7 +19,7 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ user }) => {
   const navItems = [
-    { icon: Home, label: 'Home', isActive: true },
+    { icon: Home, label: 'Home', isActive: true, onClick: () => window.location.href = '/' },
     { icon: Video, label: 'Videos' },
     { icon: Store, label: 'Shop' },
     { icon: Menu, label: 'Menu' },
@@ -49,6 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ user }) => {
             {navItems.map((item, index) => (
               <button
                 key={index}
+                onClick={item.onClick}
                 className={cn(
                   "flex items-center justify-center w-28 h-12 rounded-lg transition-colors relative",
                   item.isActive 

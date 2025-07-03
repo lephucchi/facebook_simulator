@@ -1,6 +1,8 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import Newsfeed from './pages/Newsfeed';
 import Login from './pages/Login';
+import Profile from './pages/Profile';
 import './index.css';
 
 function AppRouter() {
@@ -17,21 +19,28 @@ function AppRouter() {
     );
   }
 
-  // Simple routing based on authentication status
   if (!isAuthenticated) {
     return <Login />;
   }
 
-  // If authenticated, show the newsfeed
-  return <Newsfeed />;
+  return (
+    <Routes>
+      <Route path="/" element={<Newsfeed />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile/:userId" element={<Profile />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 function App() {
   return (
     <AuthProvider>
-      <div className="App">
-        <AppRouter />
-      </div>
+      <Router>
+        <div className="App">
+          <AppRouter />
+        </div>
+      </Router>
     </AuthProvider>
   );
 }

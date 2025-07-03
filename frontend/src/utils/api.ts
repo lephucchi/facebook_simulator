@@ -105,6 +105,13 @@ class ApiClient {
     return this.request('/auth/users');
   }
 
+  async updateProfile(userData: { full_name?: string; avatar_url?: string }) {
+    return this.request('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  }
+
   // Posts methods
   async getPosts(page = 1, per_page = 10) {
     return this.request(`/posts?page=${page}&per_page=${per_page}`);
@@ -118,6 +125,13 @@ class ApiClient {
   async createPost(postData: { content: string; image_url?: string }) {
     return this.request('/posts', {
       method: 'POST',
+      body: JSON.stringify(postData),
+    });
+  }
+
+  async updatePost(postId: number, postData: { content: string; image_url?: string }) {
+    return this.request(`/posts/${postId}`, {
+      method: 'PUT',
       body: JSON.stringify(postData),
     });
   }
@@ -145,6 +159,19 @@ class ApiClient {
     return this.request(`/posts/${postId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content }),
+    });
+  }
+
+  async updateComment(commentId: string, content: string) {
+    return this.request(`/posts/comments/${commentId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  async deleteComment(commentId: string) {
+    return this.request(`/posts/comments/${commentId}`, {
+      method: 'DELETE',
     });
   }
 

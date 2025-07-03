@@ -39,10 +39,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
       icon: User,
       label: 'Profile',
       onClick: () => {
-        // Open profile page - for now just log
-        console.log('Opening profile page...');
-        // In a real app, you would navigate to /profile
-        // window.location.href = '/profile';
+        // Navigate to profile page
+        window.location.href = '/profile';
         setIsOpen(false);
       }
     },

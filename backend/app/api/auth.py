@@ -9,7 +9,7 @@ from app.core.auth import (
 )
 from app.models.database import User
 from app.models.schemas import (
-    UserCreate, UserResponse, LoginRequest, Token, APIResponse
+    UserCreate, UserResponse, LoginRequest, Token, APIResponse, UserUpdate
 )
 from typing import List, Optional
 
@@ -162,6 +162,44 @@ async def get_all_users(
     
     users = db.query(User).all()
     return users
+
+@router.put("/me", response_model=UserResponse)
+async def update_profile(
+    user_update: UserUpdate,
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Update current user's profile"""
+    from datetime import datetime
+    
+    # Get current user
+    token_data = verify_token(credentials.credentials)
+    if not token_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    current_user = get_user_by_username(db, token_data.username)
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found"
+        )
+    
+    # Update user fields
+    if user_update.full_name is not None:
+        current_user.full_name = user_update.full_name
+    if user_update.avatar_url is not None:
+        current_user.avatar_url = user_update.avatar_url
+    
+    current_user.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    return current_user
 
 # Dependency to get current user
 async def get_current_user_dependency(

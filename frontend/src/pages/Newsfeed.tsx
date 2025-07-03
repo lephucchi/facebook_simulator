@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Post, Story, User } from '../types';
+import type { Post, Story } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { apiClient } from '../utils/api';
 import Navbar from '../components/layout/Navbar';
@@ -261,6 +261,88 @@ const Newsfeed: React.FC = () => {
     }));
   };
 
+  const handleEditPost = async (postId: string, content: string) => {
+    try {
+      const postIdNum = parseInt(postId);
+      const updatedPost = await apiClient.updatePost(postIdNum, { content }) as any;
+      
+      // Update the post in state
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            content: updatedPost.content
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      setError('Failed to update post. Please try again.');
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const postIdNum = parseInt(postId);
+      await apiClient.deletePost(postIdNum);
+      
+      // Remove the post from state
+      setPosts(posts.filter(post => post.id !== postId));
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      setError('Failed to delete post. Please try again.');
+    }
+  };
+
+  const handleEditComment = async (postId: string, commentId: string, content: string) => {
+    try {
+      const updatedComment = await apiClient.updateComment(commentId, content) as any;
+      
+      // Update the comment in state
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: post.comments.map(comment => {
+              if (comment.id === commentId) {
+                return {
+                  ...comment,
+                  content: updatedComment.content
+                };
+              }
+              return comment;
+            })
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Failed to update comment:', error);
+      setError('Failed to update comment. Please try again.');
+    }
+  };
+
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    try {
+      await apiClient.deleteComment(commentId);
+      
+      // Remove the comment from state
+      setPosts(posts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: post.comments.filter(comment => comment.id !== commentId)
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      setError('Failed to delete comment. Please try again.');
+    }
+  };
+
   const handleStoryClick = (storyIndex: number) => {
     setCurrentStoryIndex(storyIndex);
     setShowStoryViewer(true);
@@ -362,9 +444,14 @@ const Newsfeed: React.FC = () => {
                   <PostCard
                     key={post.id}
                     post={post}
+                    currentUser={currentUser}
                     onReaction={handleReaction}
                     onComment={handleComment}
                     onShare={handleShare}
+                    onEdit={handleEditPost}
+                    onDelete={handleDeletePost}
+                    onEditComment={handleEditComment}
+                    onDeleteComment={handleDeleteComment}
                   />
                 ))}
               </div>

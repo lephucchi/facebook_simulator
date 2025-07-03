@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.models.database import Post, User, Comment, PostReaction
 from app.models.schemas import (
     PostCreate, PostUpdate, PostResponse, APIResponse, PaginatedResponse,
-    CommentCreate, CommentResponse, ReactionCreate, ReactionResponse
+    CommentCreate, CommentResponse, ReactionCreate, ReactionResponse, CommentUpdate
 )
 from app.api.auth import get_current_user_dependency, get_current_user_optional
 
@@ -478,4 +478,87 @@ async def create_comment(
         updated_at=comment_with_author.updated_at or comment_with_author.created_at,
         likes_count=0,
         is_liked=False
+    )
+
+@router.put("/comments/{comment_id}", response_model=CommentResponse)
+async def update_comment(
+    comment_id: int,
+    comment_data: CommentUpdate,
+    current_user: User = Depends(get_current_user_dependency),
+    db: Session = Depends(get_db)
+):
+    """Update a comment"""
+    
+    # Get the comment
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found"
+        )
+    
+    # Check if user is the author
+    if comment.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this comment"
+        )
+    
+    # Update comment
+    if comment_data.content is not None:
+        comment.content = comment_data.content
+    
+    from datetime import datetime
+    comment.updated_at = datetime.utcnow()
+    
+    db.commit()
+    db.refresh(comment)
+    
+    # Get comment with author information
+    comment_with_author = db.query(Comment).options(
+        joinedload(Comment.author)
+    ).filter(Comment.id == comment_id).first()
+    
+    return CommentResponse(
+        id=comment_with_author.id,
+        content=comment_with_author.content,
+        post_id=comment_with_author.post_id,
+        author_id=comment_with_author.author_id,
+        author=comment_with_author.author,
+        created_at=comment_with_author.created_at,
+        updated_at=comment_with_author.updated_at or comment_with_author.created_at,
+        likes_count=0,
+        is_liked=False
+    )
+
+@router.delete("/comments/{comment_id}", response_model=APIResponse)
+async def delete_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user_dependency),
+    db: Session = Depends(get_db)
+):
+    """Delete a comment"""
+    
+    # Get the comment
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found"
+        )
+    
+    # Check if user is the author
+    if comment.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this comment"
+        )
+    
+    # Delete the comment
+    db.delete(comment)
+    db.commit()
+    
+    return APIResponse(
+        success=True,
+        message="Comment deleted successfully"
     )
