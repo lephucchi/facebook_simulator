@@ -33,7 +33,10 @@ pip install -r requirements.txt
 python main.py
 ```
 
-**Backend chạy tại:** http://localhost:8000
+**Backend chạy tại:** 
+- **API:** http://localhost:8000
+- **API Docs (Swagger):** http://localhost:8000/docs
+- **API Docs (ReDoc):** http://localhost:8000/redoc
 
 #### 2. Frontend (Terminal 2)
 ```bash
