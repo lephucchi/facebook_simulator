@@ -110,4 +110,50 @@ facebook_simulator/
 ### WebSocket
 - `WS /ws?token={jwt_token}` - Kết nối real-time
 
+## ⚙️ Cấu hình Environment
+
+### Backend Environment (.env)
+Tạo file `.env` trong thư mục `backend/` với nội dung:
+
+```env
+# Database Configuration
+DATABASE_URL=sqlite:///./facebook_simulator.db
+
+# JWT Security
+JWT_SECRET_KEY=your-super-secret-jwt-key-change-this-in-production
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+
+# Server Configuration  
+PORT=8000
+HOST=127.0.0.1
+DEBUG=True
+
+# CORS Settings
+FRONTEND_URL=http://localhost:5173
+
+# File Upload
+MAX_FILE_SIZE=10485760
+UPLOAD_FOLDER=uploads/
+```
+
+### Frontend Environment (.env)
+Tạo file `.env` trong thư mục `frontend/` với nội dung:
+
+```env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8000/api
+VITE_WEBSOCKET_URL=ws://localhost:8000/ws
+
+# App Settings
+VITE_APP_NAME=Facebook Simulator
+VITE_APP_VERSION=1.0.0
+```
+
+**⚠️ Lưu ý quan trọng:**
+- Thay đổi `JWT_SECRET_KEY` khi deploy production
+- Không commit file `.env` lên Git
+- Tạo file `.env.example` để team khác tham khảo
+
 *Dự án được xây dựng cho mục đích học tập và demonstration.*
